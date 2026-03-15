@@ -1,0 +1,1728 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>ナース手帖 - 実習記録＆SOAP支援</title>
+
+<!-- PWA設定 -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#6b9e7a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ナース手帖">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="description" content="看護学生向け実習記録・SOAP支援アプリ">
+
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;500&family=Noto+Sans+JP:wght@300;400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cream: #faf8f5;
+  --warm-white: #f5f2ee;
+  --sage: #6b9e7a;
+  --sage-light: #a8c4b0;
+  --sage-dark: #4a7d5a;
+  --sage-bg: #eef5f0;
+  --charcoal: #2c2c2c;
+  --mid-gray: #6b6b6b;
+  --light-gray: #e8e4df;
+  --accent: #c17f5a;
+  --accent-bg: #fdf0e8;
+  --blue: #5a7fa0;
+  --blue-bg: #edf3f8;
+  --line: #ddd8d2;
+  --white: #ffffff;
+  --shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Noto Sans JP',sans-serif; background:var(--cream); color:var(--charcoal); min-height:100vh; }
+
+header {
+  background:white; border-bottom:1px solid var(--line);
+  padding:0 1.5rem; display:flex; align-items:center;
+  justify-content:space-between; height:60px;
+  position:sticky; top:0; z-index:200;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+.logo { display:flex; align-items:center; gap:10px; }
+.logo-mark {
+  width:34px; height:34px; background:var(--sage);
+  border-radius:10px; display:flex; align-items:center; justify-content:center;
+}
+.logo-text { font-family:'Noto Serif JP',serif; font-size:1.15rem; font-weight:400; letter-spacing:.05em; }
+.logo-sub { font-size:.65rem; color:var(--mid-gray); letter-spacing:.1em; }
+.header-date { font-size:.78rem; color:var(--mid-gray); }
+
+.app { display:flex; height:calc(100vh - 60px); }
+
+.sidebar {
+  width:200px; flex-shrink:0; background:white;
+  border-right:1px solid var(--line); padding:1.2rem .8rem;
+  overflow-y:auto; display:flex; flex-direction:column; gap:1.5rem;
+}
+.sidebar-label {
+  font-size:.62rem; font-weight:600; letter-spacing:.14em;
+  color:var(--mid-gray); text-transform:uppercase; margin-bottom:.6rem; padding-left:.4rem;
+}
+.nav-item {
+  display:flex; align-items:center; gap:8px;
+  padding:.55rem .8rem; border-radius:8px; cursor:pointer;
+  font-size:.84rem; color:var(--mid-gray); transition:all .15s; margin-bottom:2px;
+}
+.nav-item:hover { background:var(--warm-white); color:var(--charcoal); }
+.nav-item.active { background:var(--sage); color:white; }
+.nav-icon { width:15px; height:15px; flex-shrink:0; }
+
+.recent-item {
+  padding:.5rem .7rem; border-radius:6px; cursor:pointer;
+  margin-bottom:3px; transition:background .15s;
+}
+.recent-item:hover { background:var(--warm-white); }
+.recent-date { font-size:.68rem; color:var(--mid-gray); }
+.recent-title { font-size:.78rem; color:var(--charcoal); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+.main { flex:1; overflow-y:auto; }
+.page { display:none; padding:2rem 2.5rem; animation:fadeUp .25s ease; }
+.page.active { display:block; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+
+.page-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:1.8rem; }
+.page-title { font-family:'Noto Serif JP',serif; font-size:1.35rem; font-weight:400; }
+.page-sub { font-size:.76rem; color:var(--mid-gray); margin-top:3px; }
+
+.btn { padding:.5rem 1.1rem; border-radius:8px; font-size:.83rem; font-family:'Noto Sans JP',sans-serif; cursor:pointer; border:none; transition:all .15s; }
+.btn-primary { background:var(--sage); color:white; }
+.btn-primary:hover { background:var(--sage-dark); }
+.btn-outline { background:white; color:var(--charcoal); border:1px solid var(--line); }
+.btn-outline:hover { background:var(--warm-white); }
+.btn-ai { background:linear-gradient(135deg,#5a7fa0,#6b9e7a); color:white; display:flex; align-items:center; gap:6px; padding:.55rem 1.2rem; }
+.btn-ai:hover { opacity:.9; }
+.btn-sm { padding:.35rem .8rem; font-size:.76rem; }
+
+.card {
+  background:white; border:1px solid var(--line);
+  border-radius:12px; padding:1.4rem 1.5rem; margin-bottom:1.1rem;
+  box-shadow:var(--shadow);
+}
+.card-title {
+  font-size:.76rem; font-weight:600; color:var(--sage-dark);
+  letter-spacing:.1em; text-transform:uppercase;
+  margin-bottom:1.2rem; padding-bottom:.75rem;
+  border-bottom:1px solid var(--light-gray);
+  display:flex; align-items:center; gap:7px;
+}
+.card-title-dot { width:6px; height:6px; background:var(--sage); border-radius:50%; flex-shrink:0; }
+
+.form-row { display:grid; gap:.9rem; margin-bottom:.9rem; }
+.form-row.cols-3 { grid-template-columns:1fr 1fr 1fr; }
+.form-row.cols-2 { grid-template-columns:1fr 1fr; }
+.form-row.cols-1 { grid-template-columns:1fr; }
+
+.form-group { display:flex; flex-direction:column; gap:.35rem; }
+label { font-size:.74rem; font-weight:500; color:var(--mid-gray); }
+.req::after { content:' *'; color:var(--accent); }
+
+input[type=text],input[type=date],input[type=number],select,textarea {
+  font-family:'Noto Sans JP',sans-serif; font-size:.86rem;
+  color:var(--charcoal); background:white;
+  border:1px solid var(--line); border-radius:8px;
+  padding:.6rem .85rem; transition:border-color .15s,box-shadow .15s; outline:none; width:100%;
+}
+input:focus,select:focus,textarea:focus {
+  border-color:var(--sage-light);
+  box-shadow:0 0 0 3px rgba(107,158,122,.12);
+}
+textarea { resize:vertical; line-height:1.75; }
+.char-count { font-size:.68rem; color:var(--mid-gray); text-align:right; margin-top:3px; }
+
+.soap-tabs { display:flex; gap:3px; margin-bottom:1.2rem; background:var(--warm-white); padding:4px; border-radius:10px; }
+.soap-tab {
+  flex:1; text-align:center; padding:.55rem; border-radius:7px;
+  cursor:pointer; font-size:.82rem; font-weight:500;
+  color:var(--mid-gray); transition:all .15s;
+}
+.soap-tab.active { background:white; color:var(--charcoal); box-shadow:var(--shadow); }
+.soap-tab-badge {
+  display:inline-block; width:18px; height:18px; border-radius:5px;
+  font-size:.72rem; font-weight:700; margin-right:5px;
+  line-height:18px; text-align:center;
+}
+.s-badge { background:#e8f0fb; color:#3d6fb5; }
+.o-badge { background:#e8f5ed; color:#3d7a52; }
+.a-badge { background:#fdf0e8; color:#b5653d; }
+.p-badge { background:#f0e8fd; color:#6b3db5; }
+
+.soap-panel { display:none; }
+.soap-panel.active { display:block; }
+
+.ai-box {
+  background:linear-gradient(135deg,#edf3f8 0%,#eef5f0 100%);
+  border:1px solid #c8dce8; border-radius:12px;
+  padding:1.4rem 1.5rem; margin-bottom:1.1rem;
+}
+.ai-box-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:.6rem; }
+.ai-box-title { font-size:.84rem; font-weight:600; color:var(--blue); display:flex; align-items:center; gap:7px; }
+.ai-result {
+  background:white; border-radius:8px; padding:1.2rem;
+  font-size:.84rem; line-height:1.9; color:var(--charcoal);
+  border:1px solid #d0e4f0; min-height:80px;
+}
+.ai-placeholder { color:var(--mid-gray); font-size:.82rem; font-style:italic; }
+
+.spinner {
+  display:inline-block; width:14px; height:14px;
+  border:2px solid rgba(90,127,160,.3); border-top-color:var(--blue);
+  border-radius:50%; animation:spin .7s linear infinite; vertical-align:middle; margin-right:6px;
+}
+@keyframes spin { to{transform:rotate(360deg)} }
+
+.stats-bar { display:grid; grid-template-columns:repeat(4,1fr); gap:.8rem; margin-bottom:1.8rem; }
+.stat-card { background:white; border:1px solid var(--line); border-radius:10px; padding:1rem; text-align:center; box-shadow:var(--shadow); }
+.stat-num { font-family:'DM Serif Display',serif; font-size:1.9rem; color:var(--sage-dark); line-height:1; }
+.stat-lbl { font-size:.68rem; color:var(--mid-gray); margin-top:3px; }
+
+.rec-card {
+  background:white; border:1px solid var(--line); border-radius:12px;
+  padding:1.1rem 1.4rem; margin-bottom:.8rem; cursor:pointer;
+  transition:all .15s; display:flex; align-items:flex-start; gap:1.1rem;
+  box-shadow:var(--shadow);
+}
+.rec-card:hover { border-color:var(--sage-light); transform:translateY(-1px); box-shadow:0 4px 16px rgba(0,0,0,.09); }
+.rec-date { text-align:center; flex-shrink:0; width:48px; }
+.rec-day { font-family:'DM Serif Display',serif; font-size:1.5rem; color:var(--charcoal); line-height:1; }
+.rec-month { font-size:.68rem; color:var(--mid-gray); }
+.rec-divider { width:1px; background:var(--line); align-self:stretch; flex-shrink:0; }
+.rec-body { flex:1; min-width:0; }
+.rec-dept { font-size:.7rem; color:var(--sage-dark); font-weight:600; letter-spacing:.05em; margin-bottom:3px; }
+.rec-title { font-size:.92rem; font-weight:500; margin-bottom:5px; }
+.rec-preview { font-size:.78rem; color:var(--mid-gray); line-height:1.6; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.rec-meta { display:flex; gap:5px; margin-top:6px; flex-wrap:wrap; align-items:center; }
+.mini-tag { font-size:.67rem; padding:2px 7px; border-radius:10px; background:var(--warm-white); color:var(--mid-gray); }
+.patient-badge { font-size:.67rem; padding:2px 8px; border-radius:10px; background:var(--sage-bg); color:var(--sage-dark); font-weight:500; }
+
+.empty-state { text-align:center; padding:4rem 2rem; color:var(--mid-gray); }
+.empty-state h3 { font-family:'Noto Serif JP',serif; font-size:1.05rem; font-weight:400; margin-bottom:.5rem; color:var(--charcoal); }
+.empty-state p { font-size:.82rem; line-height:1.8; }
+
+.detail-grid { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+.detail-box { background:var(--warm-white); border-radius:8px; padding:1rem; }
+.detail-label { font-size:.68rem; font-weight:600; color:var(--mid-gray); letter-spacing:.08em; text-transform:uppercase; margin-bottom:.4rem; }
+.detail-value { font-size:.88rem; color:var(--charcoal); line-height:1.7; white-space:pre-wrap; }
+
+.soap-display { display:grid; grid-template-columns:1fr 1fr; gap:.8rem; margin-top:1rem; }
+.soap-box { border-radius:8px; padding:1rem; }
+.soap-box.s { background:#edf3fb; }
+.soap-box.o { background:#edf5ef; }
+.soap-box.a { background:#fdf0e8; }
+.soap-box.p { background:#f3eafd; }
+.soap-box-label { font-size:.7rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; margin-bottom:.5rem; }
+.soap-box.s .soap-box-label { color:#3d6fb5; }
+.soap-box.o .soap-box-label { color:#3d7a52; }
+.soap-box.a .soap-box-label { color:#b5653d; }
+.soap-box.p .soap-box-label { color:#6b3db5; }
+
+.back-btn { display:flex; align-items:center; gap:5px; cursor:pointer; color:var(--mid-gray); font-size:.82rem; margin-bottom:1.5rem; }
+.back-btn:hover { color:var(--charcoal); }
+
+.form-actions { display:flex; justify-content:flex-end; gap:.7rem; margin-top:1.5rem; padding-top:1.2rem; border-top:1px solid var(--line); }
+
+.toast {
+  position:fixed; bottom:1.5rem; right:1.5rem;
+  background:var(--charcoal); color:white;
+  padding:.7rem 1.2rem; border-radius:10px; font-size:.83rem;
+  display:flex; align-items:center; gap:7px;
+  opacity:0; transform:translateY(8px); transition:all .25s;
+  pointer-events:none; z-index:999;
+}
+.toast.show { opacity:1; transform:translateY(0); }
+
+.gender-toggle { display:flex; gap:4px; }
+.gender-btn {
+  flex:1; padding:.55rem; border:1px solid var(--line); border-radius:7px;
+  cursor:pointer; font-size:.82rem; text-align:center;
+  background:white; color:var(--mid-gray); transition:all .15s;
+}
+.gender-btn.active-m { background:#edf3fb; border-color:#5a7fa0; color:#3d6fb5; font-weight:500; }
+.gender-btn.active-f { background:#fdeaf3; border-color:#c46b9a; color:#a03a72; font-weight:500; }
+
+.dev-hint {
+  background:var(--accent-bg); border:1px solid #e8c4a0;
+  border-radius:8px; padding:.7rem 1rem; font-size:.78rem;
+  color:#8a4a20; line-height:1.7; margin-top:.5rem;
+  display:none;
+}
+.dev-hint.show { display:block; }
+
+/* ===== バイタルグリッド ===== */
+.vital-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: .6rem;
+  margin-bottom: .2rem;
+}
+.vital-item {
+  background: var(--warm-white);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: .6rem .7rem;
+}
+.vital-item-wide { grid-column: span 2; }
+.vital-label {
+  font-size: .68rem;
+  font-weight: 600;
+  color: var(--mid-gray);
+  letter-spacing: .04em;
+  margin-bottom: .35rem;
+}
+.vital-input-row {
+  display: flex;
+  align-items: center;
+  gap: .3rem;
+}
+.vital-input-row input {
+  flex: 1;
+  padding: .4rem .5rem;
+  font-size: .9rem;
+  font-weight: 500;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: white;
+  text-align: center;
+  min-width: 0;
+}
+.vital-input-row input:focus {
+  border-color: var(--sage-light);
+  box-shadow: 0 0 0 2px rgba(107,158,122,.12);
+}
+.vital-unit {
+  font-size: .68rem;
+  color: var(--mid-gray);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.vital-toggle-row {
+  display: flex;
+  gap: .35rem;
+}
+.vital-toggle {
+  flex: 1;
+  text-align: center;
+  padding: .35rem .4rem;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: white;
+  font-size: .76rem;
+  cursor: pointer;
+  transition: all .15s;
+  color: var(--mid-gray);
+}
+.vital-toggle.active-none { background: var(--sage-bg); border-color: var(--sage); color: var(--sage-dark); font-weight: 600; }
+.vital-toggle.active-warn { background: #fdeaea; border-color: #e74c3c; color: #c0392b; font-weight: 600; }
+@media (max-width: 768px) {
+  .vital-grid { grid-template-columns: repeat(2, 1fr); }
+  .vital-item-wide { grid-column: span 2; }
+}
+
+
+/* ===== 設定ページ ===== */
+.settings-section { margin-bottom: 1.5rem; }
+.settings-section-title {
+  font-size: .72rem; font-weight: 600; letter-spacing: .12em;
+  color: var(--mid-gray); text-transform: uppercase;
+  margin-bottom: .8rem; padding-left: .2rem;
+}
+.provider-cards { display: grid; grid-template-columns: 1fr 1fr; gap: .7rem; margin-bottom: 1rem; }
+.provider-card {
+  border: 2px solid var(--line); border-radius: 10px;
+  padding: .9rem 1rem; cursor: pointer; transition: all .15s;
+  background: white; text-align: center;
+}
+.provider-card:hover { border-color: var(--sage-light); }
+.provider-card.active { border-color: var(--sage); background: var(--sage-bg); }
+.provider-card-name { font-size: .88rem; font-weight: 600; margin-bottom: 3px; }
+.provider-card-desc { font-size: .7rem; color: var(--mid-gray); }
+.provider-card .provider-icon { font-size: 1.4rem; margin-bottom: .4rem; }
+.api-key-group { position: relative; }
+.api-key-toggle {
+  position: absolute; right: .75rem; top: 50%; transform: translateY(-50%);
+  background: none; border: none; cursor: pointer; color: var(--mid-gray); padding: 0;
+}
+.key-status {
+  display: flex; align-items: center; gap: 6px;
+  font-size: .76rem; margin-top: .4rem;
+}
+.key-status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.key-status-dot.ok { background: var(--sage); }
+.key-status-dot.ng { background: #e74c3c; }
+.key-status-dot.none { background: var(--mid-gray); }
+.model-select-group { margin-top: .8rem; }
+.test-btn-row { display: flex; gap: .6rem; margin-top: 1rem; }
+.info-box {
+  background: var(--blue-bg); border: 1px solid #b8d0e8;
+  border-radius: 8px; padding: .8rem 1rem;
+  font-size: .78rem; color: #2c4a5e; line-height: 1.7;
+  margin-top: .8rem;
+}
+.info-box a { color: var(--blue); }
+
+/* ===== MOBILE ===== */
+.bottom-nav {
+  display: none;
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: white; border-top: 1px solid var(--line);
+  padding: 8px 0;
+  padding-bottom: env(safe-area-inset-bottom, 8px);
+  z-index: 300;
+  justify-content: space-around;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.06);
+}
+.bnav-item {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 6px 20px; border-radius: 10px; cursor: pointer;
+  font-size: .65rem; color: var(--mid-gray); transition: all .15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.bnav-item.active { color: var(--sage-dark); }
+.bnav-item svg { width: 22px; height: 22px; }
+.bnav-dot { width:5px; height:5px; border-radius:50%; background:var(--sage); margin:0 auto; opacity:0; transition:opacity .15s; }
+.bnav-item.active .bnav-dot { opacity:1; }
+.install-banner {
+  display: none; position: fixed; bottom: 80px; left: 1rem; right: 1rem;
+  background: var(--charcoal); color: white; border-radius: 12px;
+  padding: .9rem 1.2rem; z-index: 400;
+  flex-direction: row; align-items: center; gap: .8rem;
+  box-shadow: 0 4px 20px rgba(0,0,0,.2);
+  animation: slideUp .3s ease;
+}
+@keyframes slideUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
+.install-banner.show { display:flex; }
+.install-banner-text { flex:1; font-size:.82rem; line-height:1.5; }
+.install-banner-text strong { display:block; margin-bottom:2px; }
+.install-banner-text span { font-size:.72rem; opacity:.8; }
+.btn-install { background:var(--sage); color:white; border:none; padding:.5rem 1rem; border-radius:8px; font-size:.8rem; cursor:pointer; white-space:nowrap; font-family:"Noto Sans JP",sans-serif; }
+.btn-dismiss { background:none; border:none; color:rgba(255,255,255,.6); cursor:pointer; font-size:1.2rem; padding:0 4px; }
+@media (max-width: 768px) {
+  .sidebar { display:none; }
+  .bottom-nav { display:flex; }
+  .main { padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
+  .page { padding:1.2rem 1rem; }
+  .form-row.cols-3 { grid-template-columns:1fr; }
+  .form-row.cols-2 { grid-template-columns:1fr; }
+  .stats-bar { grid-template-columns:repeat(2,1fr); }
+  .soap-display { grid-template-columns:1fr; }
+  .detail-grid { grid-template-columns:1fr; }
+  .page-header { flex-direction:column; gap:.8rem; align-items:flex-start; }
+  header { padding:0 1rem; }
+  .logo-text { font-size:1rem; }
+  .soap-tab { font-size:.75rem; padding:.45rem .3rem; }
+  .soap-tab-badge { width:16px; height:16px; font-size:.65rem; line-height:16px; margin-right:3px; }
+  .rec-card { padding:.9rem 1rem; }
+  input[type=text],input[type=date],input[type=number],select,textarea { font-size:16px; }
+  .form-actions { position:sticky; bottom:72px; background:var(--cream); padding:.8rem 0; margin:0; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-mark">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2">
+        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83"/>
+        <circle cx="12" cy="12" r="4"/>
+      </svg>
+    </div>
+    <div>
+      <div class="logo-text">ナース手帖</div>
+      <div class="logo-sub">実習記録 ＆ SOAP支援</div>
+    </div>
+  </div>
+  <div class="header-date" id="headerDate"></div>
+</header>
+
+
+<!-- Bottom Nav (mobile) -->
+<nav class="bottom-nav" id="bottomNav">
+  <div class="bnav-item active" id="bnav-list" onclick="nav('list')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+    <div class="bnav-dot"></div>
+    記録一覧
+  </div>
+  <div class="bnav-item" id="bnav-new" onclick="nav('new')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>
+    <div class="bnav-dot"></div>
+    新規記録
+  </div>
+  <div class="bnav-item" id="bnav-settings" onclick="nav('settings')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+    <div class="bnav-dot"></div>
+    AI設定
+  </div>
+</nav>
+
+<!-- PWA Install Banner -->
+<div class="install-banner" id="installBanner">
+  <div class="install-banner-text">
+    <strong>📱 ホーム画面に追加</strong>
+    <span>アプリとして使えます。オフラインでも動作します。</span>
+  </div>
+  <button class="btn-install" id="installBtn" onclick="installPWA()">追加する</button>
+  <button class="btn-dismiss" onclick="dismissInstall()">✕</button>
+</div>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">メニュー</div>
+      <div class="nav-item active" id="nav-list" onclick="nav('list')">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+        記録一覧
+      </div>
+      <div class="nav-item" id="nav-new" onclick="nav('new')">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+        新規記録
+      </div>
+      <div class="nav-item" id="nav-settings" onclick="nav('settings')">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        AI設定
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">最近の記録</div>
+      <div id="sidebarRecent"></div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <!-- LIST -->
+    <div class="page active" id="page-list">
+      <div class="page-header">
+        <div>
+          <div class="page-title">実習記録一覧</div>
+          <div class="page-sub">これまでの記録・SOAPを確認できます</div>
+        </div>
+        <div style="display:flex;gap:.6rem;">
+          <button class="btn btn-outline btn-sm" onclick="exportAllTxt()" style="display:flex;align-items:center;gap:5px;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            全件エクスポート
+          </button>
+          <button class="btn btn-primary" onclick="nav('new')">＋ 新規記録</button>
+        </div>
+      </div>
+      <div class="stats-bar" id="statsBar"></div>
+      <div id="recordList"></div>
+    </div>
+
+    <!-- DETAIL -->
+    <div class="page" id="page-detail">
+      <div class="back-btn" onclick="nav('list')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+        一覧に戻る
+      </div>
+      <div id="detailContent"></div>
+    </div>
+
+    <!-- NEW RECORD -->
+    <div class="page" id="page-new">
+      <div class="page-header">
+        <div>
+          <div class="page-title">新規実習記録</div>
+          <div class="page-sub">患者情報・SOAP・AIアセスメント支援</div>
+        </div>
+      </div>
+
+      <!-- 基本情報 -->
+      <div class="card">
+        <div class="card-title"><div class="card-title-dot"></div>基本情報</div>
+        <div class="form-row cols-3">
+          <div class="form-group">
+            <label class="req">実習日</label>
+            <input type="date" id="inputDate">
+          </div>
+          <div class="form-group">
+            <label class="req">実習科・病棟</label>
+            <select id="inputDept">
+              <option value="">選択</option>
+              <option>内科病棟</option><option>外科病棟</option><option>小児科</option>
+              <option>産婦人科</option><option>精神科</option><option>救急外来</option>
+              <option>ICU/CCU</option><option>手術室</option><option>整形外科</option>
+              <option>脳神経外科</option><option>循環器科</option><option>消化器科</option>
+              <option>その他</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="req">今日のテーマ</label>
+            <input type="text" id="inputTitle" placeholder="例：術後観察の手順習得">
+          </div>
+        </div>
+      </div>
+
+      <!-- 患者情報 -->
+      <div class="card">
+        <div class="card-title"><div class="card-title-dot"></div>受け持ち患者情報（個人を特定する情報は入力しないでください）</div>
+        <div class="form-row cols-3">
+          <div class="form-group">
+            <label class="req">年齢</label>
+            <input type="number" id="inputAge" placeholder="例：72" min="0" max="120" oninput="updateDevStage()">
+          </div>
+          <div class="form-group">
+            <label class="req">性別</label>
+            <div class="gender-toggle">
+              <div class="gender-btn" id="genderM" onclick="setGender('男性')">♂ 男性</div>
+              <div class="gender-btn" id="genderF" onclick="setGender('女性')">♀ 女性</div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>既往歴・合併症</label>
+            <input type="text" id="inputHistory" placeholder="例：高血圧、糖尿病">
+          </div>
+        </div>
+        <div class="form-row cols-2">
+          <div class="form-group">
+            <label class="req">主疾患名</label>
+            <input type="text" id="inputDisease" placeholder="例：大腸がん（術後）">
+          </div>
+          <div class="form-group">
+            <label>入院目的・経過</label>
+            <input type="text" id="inputAdmission" placeholder="例：手術目的、術後3日目">
+          </div>
+        </div>
+        <div id="devHint" class="dev-hint"></div>
+      </div>
+
+      <!-- SOAP -->
+      <div class="card">
+        <div class="card-title"><div class="card-title-dot"></div>SOAP記録</div>
+        <div class="soap-tabs">
+          <div class="soap-tab active" onclick="switchSoap('S')"><span class="soap-tab-badge s-badge">S</span>主観的</div>
+          <div class="soap-tab" onclick="switchSoap('O')"><span class="soap-tab-badge o-badge">O</span>客観的</div>
+          <div class="soap-tab" onclick="switchSoap('A')"><span class="soap-tab-badge a-badge">A</span>アセスメント</div>
+          <div class="soap-tab" onclick="switchSoap('P')"><span class="soap-tab-badge p-badge">P</span>プラン</div>
+        </div>
+
+        <div class="soap-panel active" id="panel-S">
+          <div class="form-group">
+            <label>S（Subjective）— 患者・家族の言葉・訴え</label>
+            <textarea id="soapS" rows="5" placeholder='患者さんの言葉をそのまま記録します。&#10;例：「昨夜は痛みで眠れなかった」「起き上がると頭が痛い」「家族の面会が待ち遠しい」'></textarea>
+            <div class="char-count" id="cntS">0文字</div>
+          </div>
+        </div>
+
+        <div class="soap-panel" id="panel-O">
+          <!-- バイタルサイン個別入力 -->
+          <div class="vital-grid">
+            <div class="vital-item">
+              <div class="vital-label">収縮期血圧</div>
+              <div class="vital-input-row">
+                <input type="number" id="vSBP" placeholder="120" min="0" max="300">
+                <span class="vital-unit">mmHg</span>
+              </div>
+            </div>
+            <div class="vital-item">
+              <div class="vital-label">拡張期血圧</div>
+              <div class="vital-input-row">
+                <input type="number" id="vDBP" placeholder="80" min="0" max="200">
+                <span class="vital-unit">mmHg</span>
+              </div>
+            </div>
+            <div class="vital-item">
+              <div class="vital-label">脈拍</div>
+              <div class="vital-input-row">
+                <input type="number" id="vHR" placeholder="72" min="0" max="300">
+                <span class="vital-unit">/min</span>
+              </div>
+            </div>
+            <div class="vital-item">
+              <div class="vital-label">体温</div>
+              <div class="vital-input-row">
+                <input type="number" id="vBT" placeholder="36.5" min="30" max="45" step="0.1">
+                <span class="vital-unit">℃</span>
+              </div>
+            </div>
+            <div class="vital-item">
+              <div class="vital-label">SpO2</div>
+              <div class="vital-input-row">
+                <input type="number" id="vSpO2" placeholder="98" min="0" max="100">
+                <span class="vital-unit">%</span>
+              </div>
+            </div>
+            <div class="vital-item">
+              <div class="vital-label">呼吸数</div>
+              <div class="vital-input-row">
+                <input type="number" id="vRR" placeholder="16" min="0" max="60">
+                <span class="vital-unit">/min</span>
+              </div>
+            </div>
+            <div class="vital-item vital-item-wide">
+              <div class="vital-label">不整脈</div>
+              <div class="vital-toggle-row">
+                <div class="vital-toggle" id="vtIrr0" onclick="setToggle('Irr','なし')">なし</div>
+                <div class="vital-toggle" id="vtIrr1" onclick="setToggle('Irr','あり')">あり</div>
+              </div>
+            </div>
+            <div class="vital-item vital-item-wide">
+              <div class="vital-label">酸素投与</div>
+              <div class="vital-toggle-row">
+                <div class="vital-toggle" id="vtO20" onclick="setToggle('O2','なし')">なし</div>
+                <div class="vital-toggle" id="vtO21" onclick="setToggle('O2','あり')">あり</div>
+              </div>
+            </div>
+          </div>
+          <!-- 観察項目テキスト -->
+          <div class="form-group" style="margin-top:1rem;">
+            <label>観察項目（意識・皮膚・呼吸音・腸蠕動・創部・その他）</label>
+            <textarea id="soapPhysical" rows="4" placeholder="意識：清明&#10;皮膚：正常、浮腫なし&#10;呼吸音：清明、副雑音なし&#10;腸蠕動音：正常&#10;創部：発赤・滲出液なし&#10;その他："></textarea>
+          </div>
+          <div class="form-group" style="margin-top:.8rem;">
+            <label>O（Objective）— その他の客観的データ</label>
+            <textarea id="soapO" rows="3" placeholder="ADL自立度、食事摂取量、排泄状況、点滴の状況、検査値など"></textarea>
+            <div class="char-count" id="cntO">0文字</div>
+          </div>
+        </div>
+
+        <div class="soap-panel" id="panel-A">
+          <div class="ai-box">
+            <div class="ai-box-header">
+              <div class="ai-box-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+                AI アセスメント支援
+              </div>
+              <button class="btn btn-ai btn-sm" onclick="runAssessment()">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                分析する
+              </button>
+            </div>
+            <div style="font-size:.74rem;color:var(--mid-gray);margin-bottom:.8rem;">患者情報・S・Oを入力後に「分析する」を押すと、発達段階・疾患・SOをもとにアセスメントの視点を提示します。</div>
+            <div class="ai-result" id="aiResult"><span class="ai-placeholder">ここに分析結果が表示されます</span></div>
+          </div>
+          <div class="form-group">
+            <label>A（Assessment）— あなたのアセスメント（AI支援を参考に自分の言葉で記録）</label>
+            <textarea id="soapA" rows="5" placeholder="発達段階や疾患の特性をふまえ、S・Oから何が問題・課題として考えられるか記録します。&#10;例：術後3日目で疼痛コントロールが不十分。睡眠障害・離床遅延につながるリスクがある。"></textarea>
+            <div class="char-count" id="cntA">0文字</div>
+          </div>
+        </div>
+
+        <div class="soap-panel" id="panel-P">
+          <div class="ai-box">
+            <div class="ai-box-header">
+              <div class="ai-box-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+                AI プラン立案支援
+              </div>
+              <button class="btn btn-ai btn-sm" onclick="runPlan()">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                プランを提案
+              </button>
+            </div>
+            <div style="font-size:.74rem;color:var(--mid-gray);margin-bottom:.8rem;">アセスメント内容をもとに、Op・Tp・Epの看護計画案を提案します。</div>
+            <div class="ai-result" id="aiPlanResult"><span class="ai-placeholder">ここにプラン提案が表示されます</span></div>
+          </div>
+          <div class="form-group">
+            <label>P（Plan）— 看護計画（AI提案を参考に自分でカスタマイズ）</label>
+            <textarea id="soapP" rows="6" placeholder="Op（観察計画）：&#10;&#10;Tp（援助計画）：&#10;&#10;Ep（教育計画）："></textarea>
+            <div class="char-count" id="cntP">0文字</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 振り返り -->
+      <div class="card">
+        <div class="card-title"><div class="card-title-dot"></div>実習の振り返り</div>
+        <div class="form-row cols-2">
+          <div class="form-group">
+            <label class="req">学んだこと・気づき</label>
+            <textarea id="inputLearning" rows="3" placeholder="今日の実習で気づいたこと、印象に残ったことは？"></textarea>
+          </div>
+          <div class="form-group">
+            <label>明日への課題</label>
+            <textarea id="inputIssue" rows="3" placeholder="次回の実習で意識したいことや調べておきたいことは？"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn btn-outline" onclick="nav('list')">キャンセル</button>
+        <button class="btn btn-primary" onclick="saveRecord()">記録を保存</button>
+      </div>
+    </div>
+
+    <!-- SETTINGS PAGE -->
+    <div class="page" id="page-settings">
+      <div class="page-header">
+        <div>
+          <div class="page-title">AI 設定</div>
+          <div class="page-sub">使用するAIプロバイダーとAPIキーを設定します</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><div class="card-title-dot"></div>AIプロバイダーを選択</div>
+        <div class="provider-cards">
+          <div class="provider-card active" id="card-gemini" onclick="selectProvider('gemini')">
+            <div class="provider-icon">✦</div>
+            <div class="provider-card-name">Google Gemini</div>
+            <div class="provider-card-desc">Gemini 1.5 / 2.0</div>
+          </div>
+          <div class="provider-card" id="card-openai" onclick="selectProvider('openai')">
+            <div class="provider-icon">⬡</div>
+            <div class="provider-card-name">OpenAI</div>
+            <div class="provider-card-desc">GPT-4o / GPT-4o mini</div>
+          </div>
+          <div class="provider-card" id="card-anthropic" onclick="selectProvider('anthropic')">
+            <div class="provider-icon">◈</div>
+            <div class="provider-card-name">Anthropic</div>
+            <div class="provider-card-desc">Claude Sonnet / Haiku</div>
+          </div>
+          <div class="provider-card" id="card-openrouter" onclick="selectProvider('openrouter')">
+            <div class="provider-icon">⇄</div>
+            <div class="provider-card-name">OpenRouter</div>
+            <div class="provider-card-desc">複数モデルを一括管理</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><div class="card-title-dot"></div>APIキー</div>
+        <div class="form-group">
+          <label id="apiKeyLabel">Google Gemini APIキー</label>
+          <div class="api-key-group">
+            <input type="password" id="apiKeyInput" placeholder="APIキーを入力してください" oninput="onApiKeyInput()">
+            <button class="api-key-toggle" onclick="toggleKeyVisibility()" id="keyToggleBtn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="eyeIcon"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <div class="key-status" id="keyStatus">
+            <div class="key-status-dot none"></div>
+            <span>APIキー未設定</span>
+          </div>
+        </div>
+
+        <div class="model-select-group">
+          <div class="form-group">
+            <label>モデルを選択</label>
+            <select id="modelSelect" onchange="saveSettings()">
+              <option value="gemini-2.5-flash">Gemini 2.5 Flash（推奨）</option>
+              <option value="gemini-2.0-flash">Gemini 2.0 Flash（高速）</option>
+              <option value="gemini-1.5-pro">Gemini 1.5 Pro（高精度）</option>
+              <option value="gemini-1.5-flash">Gemini 1.5 Flash（軽量）</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="test-btn-row">
+          <button class="btn btn-primary" onclick="testConnection()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:5px"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            接続テスト
+          </button>
+          <button class="btn btn-outline" onclick="clearApiKey()">クリア</button>
+        </div>
+
+        <div class="info-box" id="providerInfo">
+          Google AI Studio（<a href="https://aistudio.google.com/app/apikey" target="_blank">aistudio.google.com</a>）で無料のAPIキーを取得できます。APIキーはこのデバイスのみに保存され、外部に送信されません。
+        </div>
+      </div>
+
+      <div class="card" id="testResultCard" style="display:none">
+        <div class="card-title"><div class="card-title-dot"></div>接続テスト結果</div>
+        <div id="testResultContent"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span id="toastMsg"></span></div>
+
+<script>
+let records = JSON.parse(localStorage.getItem('nurseRecords3') || '[]');
+let currentDetailId = null;
+let pendingDeleteId = null;
+let selectedGender = '';
+
+const today = new Date();
+document.getElementById('headerDate').textContent =
+  today.toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric',weekday:'short'});
+document.getElementById('inputDate').value = today.toISOString().split('T')[0];
+
+function nav(page) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.querySelectorAll('.bnav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  if(page==='list'||page==='detail') document.getElementById('nav-list').classList.add('active');
+  else document.getElementById('nav-'+page)?.classList.add('active');
+  const bnavEl = document.getElementById('bnav-' + (page === 'detail' ? 'list' : page));
+  if(bnavEl) bnavEl.classList.add('active');
+  if(page==='list') renderList();
+  if(page==='new' && !currentEditId) resetForm();
+  if(page==='settings') loadSettingsUI();
+  window.scrollTo(0,0);
+}
+
+function setGender(g) {
+  selectedGender = g;
+  document.getElementById('genderM').className='gender-btn'+(g==='男性'?' active-m':'');
+  document.getElementById('genderF').className='gender-btn'+(g==='女性'?' active-f':'');
+}
+
+function getDevStage(age) {
+  if(age===''||age===null||age===undefined) return null;
+  const a = parseInt(age);
+  if(isNaN(a)) return null;
+  if(a<1)  return {stage:'乳児期（0〜1歳）',erikson:'基本的信頼 vs 不信',task:'養育者との信頼関係形成。安全・安心の確保。',nursing:'啼泣・表情から苦痛を読み取る。家族と連携し分離不安を最小化する。'};
+  if(a<6)  return {stage:'幼児期（1〜6歳）',erikson:'自律性 vs 恥・疑惑／自発性 vs 罪悪感',task:'自律・自己制御の発達。遊びを通じた探索。',nursing:'分離不安への配慮。処置説明は短く具体的に。プレパレーションが有効。'};
+  if(a<12) return {stage:'学童期（6〜12歳）',erikson:'勤勉性 vs 劣等感',task:'学習・技術の習得。友人関係の形成。',nursing:'治療の必要性を論理的に説明。学習継続の支援。セルフケア能力を活かす。'};
+  if(a<18) return {stage:'青年期（12〜18歳）',erikson:'同一性 vs 役割拡散',task:'アイデンティティの確立。親からの独立。',nursing:'プライバシーの尊重。意思決定への参加を促す。ボディイメージへの配慮。'};
+  if(a<40) return {stage:'成人期（18〜40歳）',erikson:'親密性 vs 孤立',task:'親密な関係の構築。職業・家庭の確立。',nursing:'社会的役割・仕事への影響を考慮。回復後の生活設計の支援。育児との両立。'};
+  if(a<65) return {stage:'中年期（40〜65歳）',erikson:'生殖性 vs 停滞',task:'次世代の育成。社会・家族への貢献。',nursing:'更年期症状・慢性疾患リスクへの対応。社会的役割変化のサポート。'};
+  if(a<75) return {stage:'老年前期（65〜74歳）',erikson:'自我統合 vs 絶望',task:'引退・身体変化への適応。人生の振り返り。',nursing:'ADL維持・廃用予防。転倒リスク評価。家族・介護支援の調整。'};
+  return {stage:'老年後期（75歳以上）',erikson:'自我統合 vs 絶望（深化）',task:'死への準備。人生の統合と受容。',nursing:'多臓器機能低下・認知機能低下を考慮。尊厳の保持。多職種・家族連携が重要。'};
+}
+
+function updateDevStage() {
+  const age = document.getElementById('inputAge').value;
+  const hint = document.getElementById('devHint');
+  const dev = getDevStage(age);
+  if(!dev) { hint.classList.remove('show'); return; }
+  hint.innerHTML = `<strong>発達段階：${dev.stage}</strong>（エリクソン：${dev.erikson}）<br>
+    <strong>発達課題：</strong>${dev.task}<br>
+    <strong>看護のポイント：</strong>${dev.nursing}`;
+  hint.classList.add('show');
+}
+
+function switchSoap(tab) {
+  document.querySelectorAll('.soap-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.soap-panel').forEach(p=>p.classList.remove('active'));
+  const idx = ['S','O','A','P'].indexOf(tab);
+  document.querySelectorAll('.soap-tab')[idx].classList.add('active');
+  document.getElementById('panel-'+tab).classList.add('active');
+}
+
+['S','O','A','P'].forEach(k=>{
+  const el = document.getElementById('soap'+k);
+  if(el) el.addEventListener('input',()=>{
+    document.getElementById('cnt'+k).textContent = el.value.length+'文字';
+  });
+});
+
+async function runAssessment() {
+  const age = document.getElementById('inputAge').value;
+  const disease = document.getElementById('inputDisease').value;
+  if(!age || !disease) { showToast('年齢と主疾患を入力してください'); return; }
+
+  const dev = getDevStage(age);
+  const resultEl = document.getElementById('aiResult');
+  resultEl.innerHTML = '<span class="spinner"></span>分析中...';
+
+  const prompt = `あなたは看護教育の専門家です。看護学生の実習アセスメントを支援してください。
+
+【患者情報】
+年齢：${age}歳　性別：${selectedGender||'不明'}
+主疾患：${disease}
+既往歴・合併症：${document.getElementById('inputHistory').value||'なし'}
+入院目的・経過：${document.getElementById('inputAdmission').value||'不明'}
+発達段階：${dev ? dev.stage : '不明'}（${dev ? dev.erikson : ''}）
+
+【S（主観的データ）】
+${document.getElementById('soapS').value||'（未入力）'}
+
+【O（客観的データ）】
+バイタル：${document.getElementById('soapVital').value||'未入力'}
+フィジカル：${document.getElementById('soapPhysical').value||'未入力'}
+その他：${document.getElementById('soapO').value||'未入力'}
+
+以下4つの視点で、学生が自分でアセスメントを深められるよう教育的に分析してください。
+
+【1. 発達段階の特徴と看護上の留意点】（3〜4文）
+【2. 疾患・病態から想定されるリスクと観察ポイント】（3〜4文）
+【3. S・Oデータからの分析（症状の関連・気になる変化・優先問題）】（4〜5文）
+【4. アセスメントをまとめるためのヒント（学生へのガイド）】（2〜3文）
+
+難しい医療用語には簡単な説明を添えてください。`;
+
+  try {
+    const text = await callAI(prompt, 3000);
+    resultEl.innerHTML = `<div style="white-space:pre-wrap;line-height:1.9;font-size:.84rem;">${escHtml(text)}</div>`;
+  } catch(e) {
+    resultEl.innerHTML = `<span style="color:#c17f5a">${escHtml(e.message||'通信エラーが発生しました。再度お試しください。')}</span>`;
+  }
+}
+
+async function runPlan() {
+  const disease = document.getElementById('inputDisease').value;
+  if(!disease) { showToast('主疾患を入力してください'); return; }
+
+  const planEl = document.getElementById('aiPlanResult');
+  planEl.innerHTML = '<span class="spinner"></span>プラン生成中...';
+
+  const dev = getDevStage(document.getElementById('inputAge').value);
+
+  const prompt = `あなたは看護教育の専門家です。看護学生がSOAPのプラン（P）を自分で立案できるよう、具体的な看護計画案を提案してください。
+
+【患者情報】
+年齢：${document.getElementById('inputAge').value||'不明'}歳　主疾患：${disease}
+発達段階：${dev ? dev.stage : '不明'}
+
+【アセスメント（A）】
+${document.getElementById('soapA').value||'（未入力）'}
+
+【参考：S・O情報】
+S：${document.getElementById('soapS').value||'未入力'}
+O：${document.getElementById('soapO').value||'未入力'}
+
+以下の形式で看護計画案を提案してください。各項目は3〜5項目の箇条書きで、学生が実践できる具体的な内容にしてください。
+
+【Op（観察計画）】
+何を・どのくらいの頻度で観察するか
+
+【Tp（援助計画）】
+どのようなケアや介助を行うか
+
+【Ep（教育計画）】
+患者・家族にどのような説明・指導をするか
+
+最後に「※この計画案はあくまでも参考です。患者の状況に応じて、指導者と相談しながら修正してください。」と記載してください。`;
+
+  try {
+    const text = await callAI(prompt, 3000);
+    planEl.innerHTML = `<div style="white-space:pre-wrap;line-height:1.9;font-size:.84rem;">${escHtml(text)}</div>`;
+  } catch(e) {
+    planEl.innerHTML = `<span style="color:#c17f5a">${escHtml(e.message||'通信エラーが発生しました。')}</span>`;
+  }
+}
+
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function saveRecord() {
+  const date = document.getElementById('inputDate').value;
+  const dept = document.getElementById('inputDept').value;
+  const title = document.getElementById('inputTitle').value;
+  const learning = document.getElementById('inputLearning').value;
+
+  if(!date||!dept||!title||!learning) {
+    showToast('必須項目（実習日・実習科・テーマ・学んだこと）を入力してください');
+    return;
+  }
+
+  const r = {
+    id:Date.now(), date, dept, title,
+    age:document.getElementById('inputAge').value,
+    gender:selectedGender,
+    disease:document.getElementById('inputDisease').value,
+    history:document.getElementById('inputHistory').value,
+    admission:document.getElementById('inputAdmission').value,
+    soapS:document.getElementById('soapS').value,
+    soapVital:getVitalText(),
+    soapPhysical:document.getElementById('soapPhysical').value,
+    soapO:document.getElementById('soapO').value,
+    soapA:document.getElementById('soapA').value,
+    soapP:document.getElementById('soapP').value,
+    learning,
+    issue:document.getElementById('inputIssue').value,
+  };
+
+  records.unshift(r);
+  localStorage.setItem('nurseRecords3', JSON.stringify(records));
+  showToast('記録を保存しました ✓');
+  nav('list');
+}
+
+function resetForm() {
+  ['inputTitle','inputAge','inputHistory','inputDisease','inputAdmission',
+   'soapS','soapVital','soapPhysical','soapO','soapA','soapP','inputLearning','inputIssue']
+    .forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('inputDate').value = today.toISOString().split('T')[0];
+  document.getElementById('inputDept').value = '';
+  selectedGender='';
+  document.getElementById('genderM').className='gender-btn';
+  document.getElementById('genderF').className='gender-btn';
+  document.getElementById('devHint').classList.remove('show');
+  document.getElementById('aiResult').innerHTML='<span class="ai-placeholder">ここに分析結果が表示されます</span>';
+  document.getElementById('aiPlanResult').innerHTML='<span class="ai-placeholder">ここにプラン提案が表示されます</span>';
+  ['S','O','A','P'].forEach(k=>{ const el=document.getElementById('cnt'+k); if(el) el.textContent='0文字'; });
+  switchSoap('S');
+  // 編集モード解除
+  currentEditId = null;
+  const pt = document.querySelector('#page-new .page-title');
+  const ps = document.querySelector('#page-new .page-sub');
+  if (pt) pt.textContent = '新規実習記録';
+  if (ps) ps.textContent = '患者情報・SOAP・AIアセスメント支援';
+  const saveBtn = document.querySelector('.form-actions .btn-primary');
+  if (saveBtn) { saveBtn.textContent = '記録を保存'; saveBtn.onclick = saveRecord; }
+}
+
+function renderList() {
+  const depts = [...new Set(records.map(r=>r.dept).filter(Boolean))];
+  const diseases = [...new Set(records.map(r=>r.disease).filter(Boolean))];
+  document.getElementById('statsBar').innerHTML = `
+    <div class="stat-card"><div class="stat-num">${records.length}</div><div class="stat-lbl">記録総数</div></div>
+    <div class="stat-card"><div class="stat-num">${depts.length||'—'}</div><div class="stat-lbl">実習科数</div></div>
+    <div class="stat-card"><div class="stat-num">${[...new Set(records.map(r=>r.date))].length}</div><div class="stat-lbl">実習日数</div></div>
+    <div class="stat-card"><div class="stat-num">${diseases.length||'—'}</div><div class="stat-lbl">担当疾患数</div></div>`;
+
+  document.getElementById('sidebarRecent').innerHTML = records.slice(0,5).map(r=>`
+    <div class="recent-item" onclick="showDetail(${r.id})">
+      <div class="recent-date">${fmtDate(r.date).short} ${r.dept||''}</div>
+      <div class="recent-title">${r.title||'（無題）'}</div>
+    </div>`).join('');
+
+  if(!records.length) {
+    document.getElementById('recordList').innerHTML = `
+      <div class="empty-state">
+        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" style="margin:0 auto 1rem;opacity:.25;display:block">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>
+          <line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/>
+        </svg>
+        <h3>まだ記録がありません</h3>
+        <p>「新規記録」から患者情報とSOAPを入力し、<br>AIアセスメント支援を活用してみましょう。</p>
+      </div>`;
+    return;
+  }
+
+  document.getElementById('recordList').innerHTML = records.map(r=>{
+    const d = fmtDate(r.date);
+    return `<div class="rec-card" onclick="showDetail(${r.id})">
+      <div class="rec-date"><div class="rec-day">${d.day}</div><div class="rec-month">${d.month}</div></div>
+      <div class="rec-divider"></div>
+      <div class="rec-body">
+        <div class="rec-dept">${r.dept||''}</div>
+        <div class="rec-title">${r.title||'（無題）'}</div>
+        <div class="rec-preview">${r.learning||''}</div>
+        <div class="rec-meta">
+          ${r.disease?`<span class="patient-badge">${r.gender||''} ${r.age?r.age+'歳':''} ${r.disease}</span>`:''}
+          ${r.soapS?'<span class="mini-tag">S✓</span>':''}
+          ${r.soapO?'<span class="mini-tag">O✓</span>':''}
+          ${r.soapA?'<span class="mini-tag">A✓</span>':''}
+          ${r.soapP?'<span class="mini-tag">P✓</span>':''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function showDetail(id) {
+  const r = records.find(x=>x.id===id);
+  if(!r) return;
+  const dev = getDevStage(r.age);
+  const d = fmtDate(r.date);
+
+  currentDetailId = id;
+  document.getElementById('detailContent').innerHTML = `
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.5rem;gap:1rem;">
+      <div><div class="page-title">${r.title||'（無題）'}</div>
+      <div class="page-sub">${d.full}　${r.dept||''}</div></div>
+      <div class="detail-actions">
+        <button class="btn btn-edit btn-sm" onclick="startEdit(${id})">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          編集
+        </button>
+        <button class="btn btn-sm" style="background:#f0f7f2;color:#4a7d5a;border:1px solid #b0d4bc;" onclick="exportTxt(${id})">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          TXT
+        </button>
+        <button class="btn btn-delete btn-sm" onclick="openDeleteModal(${id})">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+          削除
+        </button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><div class="card-title-dot"></div>患者情報</div>
+      <div class="detail-grid">
+        <div class="detail-box"><div class="detail-label">年齢・性別</div><div class="detail-value">${r.age?r.age+'歳':'—'} ${r.gender||''}</div></div>
+        <div class="detail-box"><div class="detail-label">主疾患</div><div class="detail-value">${r.disease||'—'}</div></div>
+        <div class="detail-box"><div class="detail-label">既往歴・合併症</div><div class="detail-value">${r.history||'—'}</div></div>
+        <div class="detail-box"><div class="detail-label">入院目的・経過</div><div class="detail-value">${r.admission||'—'}</div></div>
+      </div>
+      ${dev?`<div class="dev-hint show" style="margin-top:.8rem;"><strong>発達段階：${dev.stage}</strong>（${dev.erikson}）<br><strong>発達課題：</strong>${dev.task}</div>`:''}
+    </div>
+    <div class="card">
+      <div class="card-title"><div class="card-title-dot"></div>SOAP記録</div>
+      <div class="soap-display">
+        <div class="soap-box s"><div class="soap-box-label">S — 主観的データ</div><div class="detail-value">${r.soapS||'（未記入）'}</div></div>
+        <div class="soap-box o"><div class="soap-box-label">O — 客観的データ</div>
+          ${r.soapVital?`<div style="font-size:.7rem;color:#3d7a52;font-weight:600;margin-bottom:.3rem;">バイタル</div><div class="detail-value" style="font-size:.8rem;margin-bottom:.5rem;">${r.soapVital}</div>`:''}
+          <div class="detail-value">${r.soapO||'（未記入）'}</div>
+        </div>
+        <div class="soap-box a"><div class="soap-box-label">A — アセスメント</div><div class="detail-value">${r.soapA||'（未記入）'}</div></div>
+        <div class="soap-box p"><div class="soap-box-label">P — 看護計画</div><div class="detail-value">${r.soapP||'（未記入）'}</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><div class="card-title-dot"></div>振り返り</div>
+      <div class="detail-grid">
+        <div class="detail-box"><div class="detail-label">学んだこと・気づき</div><div class="detail-value">${r.learning||'—'}</div></div>
+        <div class="detail-box"><div class="detail-label">次回への課題</div><div class="detail-value">${r.issue||'—'}</div></div>
+      </div>
+    </div>`;
+
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-detail').classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('nav-list').classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function fmtDate(str) {
+  if(!str) return {day:'—',month:'—',short:'—',full:'—'};
+  const d = new Date(str+'T00:00:00');
+  return {
+    day:d.getDate(), month:(d.getMonth()+1)+'月',
+    short:(d.getMonth()+1)+'/'+(d.getDate()),
+    full:d.toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric',weekday:'short'})
+  };
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+
+// ===== 編集 =====
+function startEdit(id) {
+  const r = records.find(x => x.id === id);
+  if (!r) return;
+
+  // フォームに値を詰める
+  document.getElementById('inputDate').value = r.date || '';
+  document.getElementById('inputDept').value = r.dept || '';
+  document.getElementById('inputTitle').value = r.title || '';
+  document.getElementById('inputAge').value = r.age || '';
+  document.getElementById('inputHistory').value = r.history || '';
+  document.getElementById('inputDisease').value = r.disease || '';
+  document.getElementById('inputAdmission').value = r.admission || '';
+  document.getElementById('soapS').value = r.soapS || '';
+  setVitalFields(r.soapVital || '');
+  document.getElementById('soapPhysical').value = r.soapPhysical || '';
+  document.getElementById('soapO').value = r.soapO || '';
+  document.getElementById('soapA').value = r.soapA || '';
+  document.getElementById('soapP').value = r.soapP || '';
+  document.getElementById('inputLearning').value = r.learning || '';
+  document.getElementById('inputIssue').value = r.issue || '';
+
+  // 性別
+  selectedGender = r.gender || '';
+  document.getElementById('genderM').className = 'gender-btn' + (r.gender === '男性' ? ' active-m' : '');
+  document.getElementById('genderF').className = 'gender-btn' + (r.gender === '女性' ? ' active-f' : '');
+
+  // 文字数カウント更新
+  ['S','O','A','P'].forEach(k => {
+    const el = document.getElementById('soap' + k);
+    const cnt = document.getElementById('cnt' + k);
+    if (el && cnt) cnt.textContent = el.value.length + '文字';
+  });
+
+  // 発達段階ヒント更新
+  updateDevStage();
+  switchSoap('S');
+
+  // 編集モードフラグ
+  currentEditId = id;
+
+  // ページタイトル変更・保存ボタンを「更新」に
+  document.querySelector('#page-new .page-title').textContent = '記録を編集';
+  document.querySelector('#page-new .page-sub').textContent = '内容を修正して「更新する」を押してください';
+  const saveBtn = document.querySelector('.form-actions .btn-primary');
+  saveBtn.textContent = '更新する';
+  saveBtn.onclick = updateRecord;
+
+  nav('new');
+}
+
+let currentEditId = null;
+
+function updateRecord() {
+  const date = document.getElementById('inputDate').value;
+  const dept = document.getElementById('inputDept').value;
+  const title = document.getElementById('inputTitle').value;
+  const learning = document.getElementById('inputLearning').value;
+
+  if (!date || !dept || !title || !learning) {
+    showToast('必須項目（実習日・実習科・テーマ・学んだこと）を入力してください');
+    return;
+  }
+
+  const idx = records.findIndex(x => x.id === currentEditId);
+  if (idx === -1) return;
+
+  records[idx] = {
+    ...records[idx],
+    date, dept, title,
+    age: document.getElementById('inputAge').value,
+    gender: selectedGender,
+    disease: document.getElementById('inputDisease').value,
+    history: document.getElementById('inputHistory').value,
+    admission: document.getElementById('inputAdmission').value,
+    soapS: document.getElementById('soapS').value,
+    soapVital: document.getElementById('soapVital').value,
+    soapPhysical: document.getElementById('soapPhysical').value,
+    soapO: document.getElementById('soapO').value,
+    soapA: document.getElementById('soapA').value,
+    soapP: document.getElementById('soapP').value,
+    learning,
+    issue: document.getElementById('inputIssue').value,
+  };
+
+  localStorage.setItem('nurseRecords3', JSON.stringify(records));
+  currentEditId = null;
+  showToast('記録を更新しました ✓');
+
+  // 詳細ページに戻る
+  showDetail(records[idx].id);
+}
+
+// ===== 削除 =====
+function openDeleteModal(id) {
+  pendingDeleteId = id;
+  document.getElementById('deleteModal').classList.add('show');
+}
+
+function closeDeleteModal() {
+  pendingDeleteId = null;
+  document.getElementById('deleteModal').classList.remove('show');
+}
+
+function confirmDelete() {
+  if (!pendingDeleteId) return;
+  records = records.filter(x => x.id !== pendingDeleteId);
+  localStorage.setItem('nurseRecords3', JSON.stringify(records));
+  pendingDeleteId = null;
+  document.getElementById('deleteModal').classList.remove('show');
+  showToast('記録を削除しました');
+  nav('list');
+}
+
+// 新規ボタン押下時はフォームをリセット（編集モード解除）
+
+
+// ===== AI プロバイダー設定 =====
+const PROVIDERS = {
+  gemini: {
+    label: 'Google Gemini APIキー',
+    models: [
+      {value:'gemini-2.5-flash', label:'Gemini 2.5 Flash（推奨）'},
+      {value:'gemini-2.0-flash',               label:'Gemini 2.0 Flash（高速）'},
+      {value:'gemini-1.5-pro',                 label:'Gemini 1.5 Pro（高精度）'},
+      {value:'gemini-1.5-flash',               label:'Gemini 1.5 Flash（軽量）'},
+    ],
+    info: 'Google AI Studio（<a href="https://aistudio.google.com/app/apikey" target="_blank">aistudio.google.com</a>）で無料のAPIキーを取得できます。',
+    placeholder: 'AIzaSy...',
+  },
+  openai: {
+    label: 'OpenAI APIキー',
+    models: [
+      {value:'gpt-4o',      label:'GPT-4o（高精度）'},
+      {value:'gpt-4o-mini', label:'GPT-4o mini（高速・低コスト）'},
+    ],
+    info: '<a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com</a> でAPIキーを取得できます。',
+    placeholder: 'sk-...',
+  },
+  anthropic: {
+    label: 'Anthropic APIキー',
+    models: [
+      {value:'claude-sonnet-4-20250514', label:'Claude Sonnet 4（推奨）'},
+      {value:'claude-haiku-4-5-20251001', label:'Claude Haiku 4.5（高速）'},
+    ],
+    info: '<a href="https://console.anthropic.com/" target="_blank">console.anthropic.com</a> でAPIキーを取得できます。',
+    placeholder: 'sk-ant-...',
+  },
+  openrouter: {
+    label: 'OpenRouter APIキー',
+    models: [
+      {value:'google/gemini-2.0-flash-exp:free', label:'Gemini 2.0 Flash（無料）'},
+      {value:'openai/gpt-4o-mini',               label:'GPT-4o mini'},
+      {value:'anthropic/claude-3-haiku',          label:'Claude 3 Haiku'},
+    ],
+    info: '<a href="https://openrouter.ai/keys" target="_blank">openrouter.ai</a> でAPIキーを取得できます。複数のモデルをまとめて使えます。',
+    placeholder: 'sk-or-...',
+  },
+};
+
+let aiSettings = JSON.parse(localStorage.getItem('nurseAISettings') || '{"provider":"gemini","model":"gemini-2.5-flash","apiKey":""}');
+
+function loadSettingsUI() {
+  selectProvider(aiSettings.provider, false);
+  document.getElementById('apiKeyInput').value = aiSettings.apiKey || '';
+  updateKeyStatus();
+}
+
+function selectProvider(provider, save=true) {
+  aiSettings.provider = provider;
+  // Update card UI
+  Object.keys(PROVIDERS).forEach(k => {
+    document.getElementById('card-' + k)?.classList.toggle('active', k === provider);
+  });
+  const p = PROVIDERS[provider];
+  // Update label
+  document.getElementById('apiKeyLabel').textContent = p.label;
+  document.getElementById('apiKeyInput').placeholder = p.placeholder;
+  // Update models
+  const sel = document.getElementById('modelSelect');
+  sel.innerHTML = p.models.map(m => `<option value="${m.value}">${m.label}</option>`).join('');
+  // Restore saved model if it matches
+  if (aiSettings.model) sel.value = aiSettings.model;
+  aiSettings.model = sel.value;
+  // Update info
+  document.getElementById('providerInfo').innerHTML = p.info + ' APIキーはこのデバイスのみに保存され、外部に送信されません。';
+  if (save) saveSettings();
+}
+
+function onApiKeyInput() {
+  aiSettings.apiKey = document.getElementById('apiKeyInput').value.trim();
+  updateKeyStatus();
+  saveSettings();
+}
+
+function updateKeyStatus() {
+  const key = aiSettings.apiKey;
+  const el = document.getElementById('keyStatus');
+  if (!key) {
+    el.innerHTML = '<div class="key-status-dot none"></div><span>APIキー未設定</span>';
+  } else {
+    el.innerHTML = '<div class="key-status-dot ok"></div><span>APIキーが設定されています</span>';
+  }
+}
+
+function toggleKeyVisibility() {
+  const inp = document.getElementById('apiKeyInput');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+
+function clearApiKey() {
+  document.getElementById('apiKeyInput').value = '';
+  aiSettings.apiKey = '';
+  updateKeyStatus();
+  saveSettings();
+  showToast('APIキーをクリアしました');
+}
+
+function saveSettings() {
+  aiSettings.model = document.getElementById('modelSelect').value;
+  localStorage.setItem('nurseAISettings', JSON.stringify(aiSettings));
+}
+
+async function testConnection() {
+  const card = document.getElementById('testResultCard');
+  const content = document.getElementById('testResultContent');
+  card.style.display = 'block';
+  content.innerHTML = '<span class="spinner"></span> 接続確認中...';
+  try {
+    const result = await callAI('「接続テスト成功」とだけ日本語で答えてください。', 50);
+    content.innerHTML = `<div style="color:var(--sage-dark);font-size:.88rem;display:flex;align-items:center;gap:8px;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      接続成功： ${escHtml(result)}
+    </div>`;
+  } catch(e) {
+    content.innerHTML = `<div style="color:#c0392b;font-size:.84rem;line-height:1.7;">
+      <strong>接続失敗</strong><br>${escHtml(e.message)}
+    </div>`;
+  }
+}
+
+// ===== 統一AI呼び出し関数 =====
+async function callAI(prompt, maxTokens = 3000) {
+  const { provider, model, apiKey } = aiSettings;
+  if (!apiKey) throw new Error('APIキーが設定されていません。「AI設定」タブで設定してください。');
+
+  // --- Google Gemini ---
+  if (provider === 'gemini') {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { maxOutputTokens: maxTokens }
+      })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    return data.candidates?.[0]?.content?.parts?.[0]?.text || 'レスポンスが空でした';
+  }
+
+  // --- OpenAI ---
+  if (provider === 'openai') {
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+      body: JSON.stringify({ model, max_tokens: maxTokens, messages: [{ role: 'user', content: prompt }] })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    return data.choices?.[0]?.message?.content || 'レスポンスが空でした';
+  }
+
+  // --- Anthropic ---
+  if (provider === 'anthropic') {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
+      body: JSON.stringify({ model, max_tokens: maxTokens, messages: [{ role: 'user', content: prompt }] })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.error?.message || JSON.stringify(data.error));
+    return data.content?.map(c => c.text || '').join('') || 'レスポンスが空でした';
+  }
+
+  // --- OpenRouter ---
+  if (provider === 'openrouter') {
+    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+        'HTTP-Referer': 'https://nurse-techo.app',
+        'X-Title': 'ナース手帖'
+      },
+      body: JSON.stringify({ model, max_tokens: maxTokens, messages: [{ role: 'user', content: prompt }] })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    return data.choices?.[0]?.message?.content || 'レスポンスが空でした';
+  }
+
+  throw new Error('不明なプロバイダーです');
+}
+
+// ===== nav override for settings =====
+
+
+// ===== バイタル toggle =====
+const vToggleState = { Irr: 'なし', O2: 'なし' };
+function setToggle(key, val) {
+  vToggleState[key] = val;
+  const ids = key === 'Irr' ? ['vtIrr0','vtIrr1'] : ['vtO20','vtO21'];
+  const vals = ['なし','あり'];
+  ids.forEach((id, i) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.className = 'vital-toggle' + (vals[i] === val ? (val === 'なし' ? ' active-none' : ' active-warn') : '');
+  });
+}
+
+function getVitalText() {
+  const sbp  = document.getElementById('vSBP')?.value;
+  const dbp  = document.getElementById('vDBP')?.value;
+  const hr   = document.getElementById('vHR')?.value;
+  const bt   = document.getElementById('vBT')?.value;
+  const spo2 = document.getElementById('vSpO2')?.value;
+  const rr   = document.getElementById('vRR')?.value;
+  const lines = [];
+  if (sbp || dbp) lines.push('血圧：' + (sbp||'?') + '/' + (dbp||'?') + ' mmHg');
+  if (hr)   lines.push('脈拍：' + hr + '/min　不整（' + vToggleState.Irr + '）');
+  if (bt)   lines.push('体温：' + bt + '℃');
+  if (spo2) lines.push('SpO2：' + spo2 + '%　酸素投与（' + vToggleState.O2 + '）');
+  if (rr)   lines.push('呼吸数：' + rr + '/min');
+  return lines.join('\n');
+}
+
+function setVitalFields(vitalText) {
+  // Parse saved vital text back to fields
+  if (!vitalText) return;
+  const lines = vitalText.split('\n');
+  lines.forEach(line => {
+    const bp = line.match(/血圧：(\d+)\/(\d+)/);
+    if (bp) { document.getElementById('vSBP').value = bp[1]; document.getElementById('vDBP').value = bp[2]; }
+    const hr = line.match(/脈拍：(\d+)/);
+    if (hr) {
+      document.getElementById('vHR').value = hr[1];
+      if (line.includes('不整（あり）')) setToggle('Irr','あり');
+      else setToggle('Irr','なし');
+    }
+    const bt = line.match(/体温：([\d.]+)/);
+    if (bt) document.getElementById('vBT').value = bt[1];
+    const spo2 = line.match(/SpO2：(\d+)/);
+    if (spo2) {
+      document.getElementById('vSpO2').value = spo2[1];
+      if (line.includes('酸素投与（あり）')) setToggle('O2','あり');
+      else setToggle('O2','なし');
+    }
+    const rr = line.match(/呼吸数：(\d+)/);
+    if (rr) document.getElementById('vRR').value = rr[1];
+  });
+}
+
+// ===== テキストエクスポート =====
+function recordToText(r) {
+  const d = fmtDate(r.date);
+  const sep = '─'.repeat(40);
+  const lines = [
+    '╔══════════════════════════════════════╗',
+    '　　　　ナース手帖　実習記録',
+    '╚══════════════════════════════════════╝',
+    '',
+    `【実習日】　${d.full}`,
+    `【実習科】　${r.dept || '—'}`,
+    `【テーマ】　${r.title || '—'}`,
+    '',
+    sep,
+    '■ 患者情報',
+    sep,
+    `年齢・性別　：${r.age ? r.age + '歳' : '—'} ${r.gender || ''}`,
+    `主疾患　　　：${r.disease || '—'}`,
+    `既往歴・合併：${r.history || '—'}`,
+    `入院目的・経：${r.admission || '—'}`,
+    '',
+    sep,
+    '■ SOAP記録',
+    sep,
+    '',
+    '【S：主観的データ（患者の言葉）】',
+    r.soapS || '（未記入）',
+    '',
+    '【O：客観的データ】',
+    r.soapVital ? '＜バイタルサイン＞\n' + r.soapVital : '',
+    r.soapPhysical ? '＜フィジカルアセスメント＞\n' + r.soapPhysical : '',
+    r.soapO || '（未記入）',
+    '',
+    '【A：アセスメント】',
+    r.soapA || '（未記入）',
+    '',
+    '【P：看護計画】',
+    r.soapP || '（未記入）',
+    '',
+    sep,
+    '■ 振り返り',
+    sep,
+    '',
+    '【学んだこと・気づき】',
+    r.learning || '—',
+    '',
+    '【明日への課題】',
+    r.issue || '—',
+    '',
+    sep,
+    `出力日時：${new Date().toLocaleString('ja-JP')}`,
+    '　　　　　ナース手帖 - 看護学生実習記録アプリ',
+  ];
+  return lines.filter(l => l !== null && l !== undefined).join('\n');
+}
+
+function exportTxt(id) {
+  const r = records.find(x => x.id === id);
+  if (!r) return;
+  const text = recordToText(r);
+  const d = fmtDate(r.date);
+  const filename = `実習記録_${r.date}_${(r.dept || '').replace(/[/\\]/g, '-')}.txt`;
+  downloadText(text, filename);
+  showToast('テキストファイルを保存しました ✓');
+}
+
+function exportAllTxt() {
+  if (!records.length) { showToast('記録がありません'); return; }
+  const divider = '\n' + '═'.repeat(50) + '\n\n';
+  const text = records.map(r => recordToText(r)).join(divider);
+  const filename = `実習記録_全件_${new Date().toISOString().slice(0,10)}.txt`;
+  downloadText(text, filename);
+  showToast(`${records.length}件をエクスポートしました ✓`);
+}
+
+function downloadText(text, filename) {
+  const bom = '\uFEFF'; // BOM付きUTF-8（Windowsメモ帳対応）
+  const blob = new Blob([bom + text], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+renderList();
+
+// ===== PWA: Service Worker (inline Blob) =====
+if ('serviceWorker' in navigator) {
+  const swCode = `
+    const CACHE = 'nurse-techo-v1';
+    self.addEventListener('install', e => {
+      self.skipWaiting();
+    });
+    self.addEventListener('activate', e => {
+      e.waitUntil(
+        caches.keys().then(keys =>
+          Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+        )
+      );
+      self.clients.claim();
+    });
+    self.addEventListener('fetch', e => {
+      if (e.request.method !== 'GET') return;
+      e.respondWith(
+        caches.match(e.request).then(cached => {
+          if (cached) return cached;
+          return fetch(e.request).then(res => {
+            if (res && res.status === 200) {
+              const clone = res.clone();
+              caches.open(CACHE).then(c => c.put(e.request, clone));
+            }
+            return res;
+          }).catch(() => cached);
+        })
+      );
+    });
+  `;
+  const blob = new Blob([swCode], { type: 'application/javascript' });
+  const swUrl = URL.createObjectURL(blob);
+  navigator.serviceWorker.register(swUrl).then(reg => {
+    console.log('SW registered (inline)');
+  }).catch(err => console.log('SW skipped:', err));
+}
+
+// ===== PWA: Install Prompt =====
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  // Show banner after 3 seconds
+  setTimeout(() => {
+    const banner = document.getElementById('installBanner');
+    if (banner && deferredPrompt) banner.classList.add('show');
+  }, 3000);
+});
+
+function installPWA() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(choice => {
+    deferredPrompt = null;
+    document.getElementById('installBanner').classList.remove('show');
+  });
+}
+
+function dismissInstall() {
+  document.getElementById('installBanner').classList.remove('show');
+  deferredPrompt = null;
+}
+
+window.addEventListener('appinstalled', () => {
+  document.getElementById('installBanner').classList.remove('show');
+  showToast('ホーム画面に追加しました 🎉');
+});
+
+
+
+</script>
+
+<!-- 削除確認モーダル -->
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal">
+    <div class="modal-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#c0392b" stroke-width="2.2">
+        <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+        <path d="M10 11v6M14 11v6M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+      </svg>
+    </div>
+    <div class="modal-title">記録を削除しますか？</div>
+    <div class="modal-body">この操作は取り消せません。<br>記録・SOAP・患者情報がすべて削除されます。</div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeDeleteModal()">キャンセル</button>
+      <button class="btn btn-delete" onclick="confirmDelete()" style="flex:1;">削除する</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>
