@@ -609,73 +609,19 @@ textarea { resize:vertical; line-height:1.75; }
         </div>
 
         <div class="soap-panel" id="panel-O">
-          <!-- バイタルサイン個別入力 -->
-          <div class="vital-grid">
-            <div class="vital-item">
-              <div class="vital-label">収縮期血圧</div>
-              <div class="vital-input-row">
-                <input type="number" id="vSBP" placeholder="120" min="0" max="300">
-                <span class="vital-unit">mmHg</span>
-              </div>
+          <div class="form-row cols-2">
+            <div class="form-group">
+              <label>バイタルサイン</label>
+              <textarea id="soapVital" rows="5" placeholder="血圧：  /  mmHg&#10;脈拍：  /min　不整（有・無）&#10;体温：  ℃&#10;SpO2：  %（room air）&#10;呼吸数：  /min"></textarea>
             </div>
-            <div class="vital-item">
-              <div class="vital-label">拡張期血圧</div>
-              <div class="vital-input-row">
-                <input type="number" id="vDBP" placeholder="80" min="0" max="200">
-                <span class="vital-unit">mmHg</span>
-              </div>
-            </div>
-            <div class="vital-item">
-              <div class="vital-label">脈拍</div>
-              <div class="vital-input-row">
-                <input type="number" id="vHR" placeholder="72" min="0" max="300">
-                <span class="vital-unit">/min</span>
-              </div>
-            </div>
-            <div class="vital-item">
-              <div class="vital-label">体温</div>
-              <div class="vital-input-row">
-                <input type="number" id="vBT" placeholder="36.5" min="30" max="45" step="0.1">
-                <span class="vital-unit">℃</span>
-              </div>
-            </div>
-            <div class="vital-item">
-              <div class="vital-label">SpO2</div>
-              <div class="vital-input-row">
-                <input type="number" id="vSpO2" placeholder="98" min="0" max="100">
-                <span class="vital-unit">%</span>
-              </div>
-            </div>
-            <div class="vital-item">
-              <div class="vital-label">呼吸数</div>
-              <div class="vital-input-row">
-                <input type="number" id="vRR" placeholder="16" min="0" max="60">
-                <span class="vital-unit">/min</span>
-              </div>
-            </div>
-            <div class="vital-item vital-item-wide">
-              <div class="vital-label">不整脈</div>
-              <div class="vital-toggle-row">
-                <div class="vital-toggle" id="vtIrr0" onclick="setToggle('Irr','なし')">なし</div>
-                <div class="vital-toggle" id="vtIrr1" onclick="setToggle('Irr','あり')">あり</div>
-              </div>
-            </div>
-            <div class="vital-item vital-item-wide">
-              <div class="vital-label">酸素投与</div>
-              <div class="vital-toggle-row">
-                <div class="vital-toggle" id="vtO20" onclick="setToggle('O2','なし')">なし</div>
-                <div class="vital-toggle" id="vtO21" onclick="setToggle('O2','あり')">あり</div>
-              </div>
+            <div class="form-group">
+              <label>フィジカルアセスメント</label>
+              <textarea id="soapPhysical" rows="5" placeholder="皮膚：色・湿潤・浮腫&#10;呼吸音：清明 / 副雑音&#10;腸蠕動音：&#10;創部：発赤・滲出液&#10;意識：清明 / 混濁"></textarea>
             </div>
           </div>
-          <!-- 観察項目テキスト -->
-          <div class="form-group" style="margin-top:1rem;">
-            <label>観察項目（意識・皮膚・呼吸音・腸蠕動・創部・その他）</label>
-            <textarea id="soapPhysical" rows="4" placeholder="意識：清明&#10;皮膚：正常、浮腫なし&#10;呼吸音：清明、副雑音なし&#10;腸蠕動音：正常&#10;創部：発赤・滲出液なし&#10;その他："></textarea>
-          </div>
-          <div class="form-group" style="margin-top:.8rem;">
+          <div class="form-group">
             <label>O（Objective）— その他の客観的データ</label>
-            <textarea id="soapO" rows="3" placeholder="ADL自立度、食事摂取量、排泄状況、点滴の状況、検査値など"></textarea>
+            <textarea id="soapO" rows="4" placeholder="ADL自立度、表情・言動、食事摂取量、排泄状況、点滴の状況、検査値など"></textarea>
             <div class="char-count" id="cntO">0文字</div>
           </div>
         </div>
@@ -1013,7 +959,7 @@ function saveRecord() {
     history:document.getElementById('inputHistory').value,
     admission:document.getElementById('inputAdmission').value,
     soapS:document.getElementById('soapS').value,
-    soapVital:getVitalText(),
+    soapVital:document.getElementById('soapVital').value,
     soapPhysical:document.getElementById('soapPhysical').value,
     soapO:document.getElementById('soapO').value,
     soapA:document.getElementById('soapA').value,
@@ -1196,7 +1142,7 @@ function startEdit(id) {
   document.getElementById('inputDisease').value = r.disease || '';
   document.getElementById('inputAdmission').value = r.admission || '';
   document.getElementById('soapS').value = r.soapS || '';
-  setVitalFields(r.soapVital || '');
+  document.getElementById('soapVital').value = r.soapVital || '';
   document.getElementById('soapPhysical').value = r.soapPhysical || '';
   document.getElementById('soapO').value = r.soapO || '';
   document.getElementById('soapA').value = r.soapA || '';
