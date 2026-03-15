@@ -254,77 +254,6 @@ textarea { resize:vertical; line-height:1.75; }
 }
 .dev-hint.show { display:block; }
 
-/* ===== バイタルグリッド ===== */
-.vital-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: .6rem;
-  margin-bottom: .2rem;
-}
-.vital-item {
-  background: var(--warm-white);
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: .6rem .7rem;
-}
-.vital-item-wide { grid-column: span 2; }
-.vital-label {
-  font-size: .68rem;
-  font-weight: 600;
-  color: var(--mid-gray);
-  letter-spacing: .04em;
-  margin-bottom: .35rem;
-}
-.vital-input-row {
-  display: flex;
-  align-items: center;
-  gap: .3rem;
-}
-.vital-input-row input {
-  flex: 1;
-  padding: .4rem .5rem;
-  font-size: .9rem;
-  font-weight: 500;
-  border-radius: 6px;
-  border: 1px solid var(--line);
-  background: white;
-  text-align: center;
-  min-width: 0;
-}
-.vital-input-row input:focus {
-  border-color: var(--sage-light);
-  box-shadow: 0 0 0 2px rgba(107,158,122,.12);
-}
-.vital-unit {
-  font-size: .68rem;
-  color: var(--mid-gray);
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-.vital-toggle-row {
-  display: flex;
-  gap: .35rem;
-}
-.vital-toggle {
-  flex: 1;
-  text-align: center;
-  padding: .35rem .4rem;
-  border-radius: 6px;
-  border: 1px solid var(--line);
-  background: white;
-  font-size: .76rem;
-  cursor: pointer;
-  transition: all .15s;
-  color: var(--mid-gray);
-}
-.vital-toggle.active-none { background: var(--sage-bg); border-color: var(--sage); color: var(--sage-dark); font-weight: 600; }
-.vital-toggle.active-warn { background: #fdeaea; border-color: #e74c3c; color: #c0392b; font-weight: 600; }
-@media (max-width: 768px) {
-  .vital-grid { grid-template-columns: repeat(2, 1fr); }
-  .vital-item-wide { grid-column: span 2; }
-}
-
-
 /* ===== 設定ページ ===== */
 .settings-section { margin-bottom: 1.5rem; }
 .settings-section-title {
@@ -501,13 +430,7 @@ textarea { resize:vertical; line-height:1.75; }
           <div class="page-title">実習記録一覧</div>
           <div class="page-sub">これまでの記録・SOAPを確認できます</div>
         </div>
-        <div style="display:flex;gap:.6rem;">
-          <button class="btn btn-outline btn-sm" onclick="exportAllTxt()" style="display:flex;align-items:center;gap:5px;">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            全件エクスポート
-          </button>
-          <button class="btn btn-primary" onclick="nav('new')">＋ 新規記録</button>
-        </div>
+        <button class="btn btn-primary" onclick="nav('new')">＋ 新規記録</button>
       </div>
       <div class="stats-bar" id="statsBar"></div>
       <div id="recordList"></div>
@@ -609,73 +532,19 @@ textarea { resize:vertical; line-height:1.75; }
         </div>
 
         <div class="soap-panel" id="panel-O">
-          <!-- バイタルサイン個別入力 -->
-          <div class="vital-grid">
-            <div class="vital-item">
-              <div class="vital-label">収縮期血圧</div>
-              <div class="vital-input-row">
-                <input type="number" id="vSBP" placeholder="120" min="0" max="300">
-                <span class="vital-unit">mmHg</span>
-              </div>
+          <div class="form-row cols-2">
+            <div class="form-group">
+              <label>バイタルサイン</label>
+              <textarea id="soapVital" rows="4" placeholder="血圧：  /  mmHg&#10;脈拍：  /min　不整（有・無）&#10;体温：  ℃&#10;SpO2：  %（room air）&#10;呼吸数：  /min"></textarea>
             </div>
-            <div class="vital-item">
-              <div class="vital-label">拡張期血圧</div>
-              <div class="vital-input-row">
-                <input type="number" id="vDBP" placeholder="80" min="0" max="200">
-                <span class="vital-unit">mmHg</span>
-              </div>
-            </div>
-            <div class="vital-item">
-              <div class="vital-label">脈拍</div>
-              <div class="vital-input-row">
-                <input type="number" id="vHR" placeholder="72" min="0" max="300">
-                <span class="vital-unit">/min</span>
-              </div>
-            </div>
-            <div class="vital-item">
-              <div class="vital-label">体温</div>
-              <div class="vital-input-row">
-                <input type="number" id="vBT" placeholder="36.5" min="30" max="45" step="0.1">
-                <span class="vital-unit">℃</span>
-              </div>
-            </div>
-            <div class="vital-item">
-              <div class="vital-label">SpO2</div>
-              <div class="vital-input-row">
-                <input type="number" id="vSpO2" placeholder="98" min="0" max="100">
-                <span class="vital-unit">%</span>
-              </div>
-            </div>
-            <div class="vital-item">
-              <div class="vital-label">呼吸数</div>
-              <div class="vital-input-row">
-                <input type="number" id="vRR" placeholder="16" min="0" max="60">
-                <span class="vital-unit">/min</span>
-              </div>
-            </div>
-            <div class="vital-item vital-item-wide">
-              <div class="vital-label">不整脈</div>
-              <div class="vital-toggle-row">
-                <div class="vital-toggle" id="vtIrr0" onclick="setToggle('Irr','なし')">なし</div>
-                <div class="vital-toggle" id="vtIrr1" onclick="setToggle('Irr','あり')">あり</div>
-              </div>
-            </div>
-            <div class="vital-item vital-item-wide">
-              <div class="vital-label">酸素投与</div>
-              <div class="vital-toggle-row">
-                <div class="vital-toggle" id="vtO20" onclick="setToggle('O2','なし')">なし</div>
-                <div class="vital-toggle" id="vtO21" onclick="setToggle('O2','あり')">あり</div>
-              </div>
+            <div class="form-group">
+              <label>フィジカルアセスメント</label>
+              <textarea id="soapPhysical" rows="4" placeholder="皮膚：色・湿潤・浮腫&#10;呼吸音：清明 / 副雑音&#10;腸蠕動音：&#10;創部：発赤・滲出液&#10;意識：清明 / 混濁"></textarea>
             </div>
           </div>
-          <!-- 観察項目テキスト -->
-          <div class="form-group" style="margin-top:1rem;">
-            <label>観察項目（意識・皮膚・呼吸音・腸蠕動・創部・その他）</label>
-            <textarea id="soapPhysical" rows="4" placeholder="意識：清明&#10;皮膚：正常、浮腫なし&#10;呼吸音：清明、副雑音なし&#10;腸蠕動音：正常&#10;創部：発赤・滲出液なし&#10;その他："></textarea>
-          </div>
-          <div class="form-group" style="margin-top:.8rem;">
+          <div class="form-group">
             <label>O（Objective）— その他の客観的データ</label>
-            <textarea id="soapO" rows="3" placeholder="ADL自立度、食事摂取量、排泄状況、点滴の状況、検査値など"></textarea>
+            <textarea id="soapO" rows="4" placeholder="ADL自立度、表情・言動、食事摂取量、排泄状況、点滴の状況、検査値など"></textarea>
             <div class="char-count" id="cntO">0文字</div>
           </div>
         </div>
@@ -801,8 +670,7 @@ textarea { resize:vertical; line-height:1.75; }
           <div class="form-group">
             <label>モデルを選択</label>
             <select id="modelSelect" onchange="saveSettings()">
-              <option value="gemini-2.5-flash">Gemini 2.5 Flash（推奨）</option>
-              <option value="gemini-2.0-flash">Gemini 2.0 Flash（高速）</option>
+              <option value="gemini-2.0-flash">Gemini 2.0 Flash（推奨・高速）</option>
               <option value="gemini-1.5-pro">Gemini 1.5 Pro（高精度）</option>
               <option value="gemini-1.5-flash">Gemini 1.5 Flash（軽量）</option>
             </select>
@@ -853,7 +721,7 @@ function nav(page) {
   const bnavEl = document.getElementById('bnav-' + (page === 'detail' ? 'list' : page));
   if(bnavEl) bnavEl.classList.add('active');
   if(page==='list') renderList();
-  if(page==='new' && !currentEditId) resetForm();
+  if(page==='new') resetForm();
   if(page==='settings') loadSettingsUI();
   window.scrollTo(0,0);
 }
@@ -940,7 +808,7 @@ ${document.getElementById('soapS').value||'（未入力）'}
 難しい医療用語には簡単な説明を添えてください。`;
 
   try {
-    const text = await callAI(prompt, 3000);
+    const text = await callAI(prompt, 1000);
     resultEl.innerHTML = `<div style="white-space:pre-wrap;line-height:1.9;font-size:.84rem;">${escHtml(text)}</div>`;
   } catch(e) {
     resultEl.innerHTML = `<span style="color:#c17f5a">${escHtml(e.message||'通信エラーが発生しました。再度お試しください。')}</span>`;
@@ -983,7 +851,7 @@ O：${document.getElementById('soapO').value||'未入力'}
 最後に「※この計画案はあくまでも参考です。患者の状況に応じて、指導者と相談しながら修正してください。」と記載してください。`;
 
   try {
-    const text = await callAI(prompt, 3000);
+    const text = await callAI(prompt, 900);
     planEl.innerHTML = `<div style="white-space:pre-wrap;line-height:1.9;font-size:.84rem;">${escHtml(text)}</div>`;
   } catch(e) {
     planEl.innerHTML = `<span style="color:#c17f5a">${escHtml(e.message||'通信エラーが発生しました。')}</span>`;
@@ -1013,7 +881,7 @@ function saveRecord() {
     history:document.getElementById('inputHistory').value,
     admission:document.getElementById('inputAdmission').value,
     soapS:document.getElementById('soapS').value,
-    soapVital:getVitalText(),
+    soapVital:document.getElementById('soapVital').value,
     soapPhysical:document.getElementById('soapPhysical').value,
     soapO:document.getElementById('soapO').value,
     soapA:document.getElementById('soapA').value,
@@ -1117,10 +985,6 @@ function showDetail(id) {
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
           編集
         </button>
-        <button class="btn btn-sm" style="background:#f0f7f2;color:#4a7d5a;border:1px solid #b0d4bc;" onclick="exportTxt(${id})">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          TXT
-        </button>
         <button class="btn btn-delete btn-sm" onclick="openDeleteModal(${id})">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
           削除
@@ -1196,7 +1060,7 @@ function startEdit(id) {
   document.getElementById('inputDisease').value = r.disease || '';
   document.getElementById('inputAdmission').value = r.admission || '';
   document.getElementById('soapS').value = r.soapS || '';
-  setVitalFields(r.soapVital || '');
+  document.getElementById('soapVital').value = r.soapVital || '';
   document.getElementById('soapPhysical').value = r.soapPhysical || '';
   document.getElementById('soapO').value = r.soapO || '';
   document.getElementById('soapA').value = r.soapA || '';
@@ -1304,10 +1168,9 @@ const PROVIDERS = {
   gemini: {
     label: 'Google Gemini APIキー',
     models: [
-      {value:'gemini-2.5-flash', label:'Gemini 2.5 Flash（推奨）'},
-      {value:'gemini-2.0-flash',               label:'Gemini 2.0 Flash（高速）'},
-      {value:'gemini-1.5-pro',                 label:'Gemini 1.5 Pro（高精度）'},
-      {value:'gemini-1.5-flash',               label:'Gemini 1.5 Flash（軽量）'},
+      {value:'gemini-2.0-flash', label:'Gemini 2.0 Flash（推奨・高速）'},
+      {value:'gemini-1.5-pro',   label:'Gemini 1.5 Pro（高精度）'},
+      {value:'gemini-1.5-flash', label:'Gemini 1.5 Flash（軽量）'},
     ],
     info: 'Google AI Studio（<a href="https://aistudio.google.com/app/apikey" target="_blank">aistudio.google.com</a>）で無料のAPIキーを取得できます。',
     placeholder: 'AIzaSy...',
@@ -1315,10 +1178,8 @@ const PROVIDERS = {
   openai: {
     label: 'OpenAI APIキー',
     models: [
-      {value:'gpt-5',        label:'GPT-5（最高精度）'},
-      {value:'gpt-5-mini',   label:'GPT-5 mini（高速・低コスト）'},
-      {value:'gpt-4o',       label:'GPT-4o（旧世代・安定）'},
-      {value:'gpt-4o-mini',  label:'GPT-4o mini（旧世代・軽量）'},
+      {value:'gpt-4o',      label:'GPT-4o（高精度）'},
+      {value:'gpt-4o-mini', label:'GPT-4o mini（高速・低コスト）'},
     ],
     info: '<a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com</a> でAPIキーを取得できます。',
     placeholder: 'sk-...',
@@ -1344,7 +1205,7 @@ const PROVIDERS = {
   },
 };
 
-let aiSettings = JSON.parse(localStorage.getItem('nurseAISettings') || '{"provider":"gemini","model":"gemini-2.5-flash","apiKey":""}');
+let aiSettings = JSON.parse(localStorage.getItem('nurseAISettings') || '{"provider":"gemini","model":"gemini-2.0-flash","apiKey":""}');
 
 function loadSettingsUI() {
   selectProvider(aiSettings.provider, false);
@@ -1426,235 +1287,110 @@ async function testConnection() {
 }
 
 // ===== 統一AI呼び出し関数 =====
-async function callAI(prompt, maxTokens = 3000) {
+async function callAI(prompt, maxTokens = 1000) {
   const { provider, model, apiKey } = aiSettings;
   if (!apiKey) throw new Error('APIキーが設定されていません。「AI設定」タブで設定してください。');
 
-  // 60秒タイムアウト
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 60000);
-
-  try {
-    let res, data;
-
-    // --- Google Gemini ---
-    if (provider === 'gemini') {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-      res = await fetch(url, {
-        method: 'POST',
-        signal: controller.signal,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { maxOutputTokens: maxTokens, temperature: 0.7 }
-        })
-      });
-      data = await res.json();
-      if (data.error) throw new Error(data.error.message);
-      return data.candidates?.[0]?.content?.parts?.[0]?.text || 'レスポンスが空でした';
-    }
-
-    // --- OpenAI ---
-    if (provider === 'openai') {
-      res = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        signal: controller.signal,
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-        body: JSON.stringify({ model, max_tokens: maxTokens, messages: [{ role: 'user', content: prompt }] })
-      });
-      data = await res.json();
-      if (data.error) throw new Error(data.error.message);
-      return data.choices?.[0]?.message?.content || 'レスポンスが空でした';
-    }
-
-    // --- Anthropic ---
-    if (provider === 'anthropic') {
-      res = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        signal: controller.signal,
-        headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
-        body: JSON.stringify({ model, max_tokens: maxTokens, messages: [{ role: 'user', content: prompt }] })
-      });
-      data = await res.json();
-      if (data.error) throw new Error(data.error.error?.message || JSON.stringify(data.error));
-      return data.content?.map(c => c.text || '').join('') || 'レスポンスが空でした';
-    }
-
-    // --- OpenRouter ---
-    if (provider === 'openrouter') {
-      res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-        method: 'POST',
-        signal: controller.signal,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`,
-          'HTTP-Referer': 'https://nurse-techo.app',
-          'X-Title': 'ナース手帖'
-        },
-        body: JSON.stringify({ model, max_tokens: maxTokens, messages: [{ role: 'user', content: prompt }] })
-      });
-      data = await res.json();
-      if (data.error) throw new Error(data.error.message);
-      return data.choices?.[0]?.message?.content || 'レスポンスが空でした';
-    }
-
-    throw new Error('不明なプロバイダーです');
-
-  } catch(e) {
-    if (e.name === 'AbortError') throw new Error('タイムアウト（60秒）しました。回線状況を確認して再度お試しください。');
-    throw e;
-  } finally {
-    clearTimeout(timer);
+  // --- Google Gemini ---
+  if (provider === 'gemini') {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { maxOutputTokens: maxTokens }
+      })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    return data.candidates?.[0]?.content?.parts?.[0]?.text || 'レスポンスが空でした';
   }
+
+  // --- OpenAI ---
+  if (provider === 'openai') {
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+      body: JSON.stringify({ model, max_tokens: maxTokens, messages: [{ role: 'user', content: prompt }] })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    return data.choices?.[0]?.message?.content || 'レスポンスが空でした';
+  }
+
+  // --- Anthropic ---
+  if (provider === 'anthropic') {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
+      body: JSON.stringify({ model, max_tokens: maxTokens, messages: [{ role: 'user', content: prompt }] })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.error?.message || JSON.stringify(data.error));
+    return data.content?.map(c => c.text || '').join('') || 'レスポンスが空でした';
+  }
+
+  // --- OpenRouter ---
+  if (provider === 'openrouter') {
+    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+        'HTTP-Referer': 'https://nurse-techo.app',
+        'X-Title': 'ナース手帖'
+      },
+      body: JSON.stringify({ model, max_tokens: maxTokens, messages: [{ role: 'user', content: prompt }] })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    return data.choices?.[0]?.message?.content || 'レスポンスが空でした';
+  }
+
+  throw new Error('不明なプロバイダーです');
 }
 
 // ===== nav override for settings =====
-
-
-// ===== バイタル toggle =====
-const vToggleState = { Irr: 'なし', O2: 'なし' };
-function setToggle(key, val) {
-  vToggleState[key] = val;
-  const ids = key === 'Irr' ? ['vtIrr0','vtIrr1'] : ['vtO20','vtO21'];
-  const vals = ['なし','あり'];
-  ids.forEach((id, i) => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.className = 'vital-toggle' + (vals[i] === val ? (val === 'なし' ? ' active-none' : ' active-warn') : '');
-  });
-}
-
-function getVitalText() {
-  const sbp  = document.getElementById('vSBP')?.value;
-  const dbp  = document.getElementById('vDBP')?.value;
-  const hr   = document.getElementById('vHR')?.value;
-  const bt   = document.getElementById('vBT')?.value;
-  const spo2 = document.getElementById('vSpO2')?.value;
-  const rr   = document.getElementById('vRR')?.value;
-  const lines = [];
-  if (sbp || dbp) lines.push('血圧：' + (sbp||'?') + '/' + (dbp||'?') + ' mmHg');
-  if (hr)   lines.push('脈拍：' + hr + '/min　不整（' + vToggleState.Irr + '）');
-  if (bt)   lines.push('体温：' + bt + '℃');
-  if (spo2) lines.push('SpO2：' + spo2 + '%　酸素投与（' + vToggleState.O2 + '）');
-  if (rr)   lines.push('呼吸数：' + rr + '/min');
-  return lines.join('\n');
-}
-
-function setVitalFields(vitalText) {
-  // Parse saved vital text back to fields
-  if (!vitalText) return;
-  const lines = vitalText.split('\n');
-  lines.forEach(line => {
-    const bp = line.match(/血圧：(\d+)\/(\d+)/);
-    if (bp) { document.getElementById('vSBP').value = bp[1]; document.getElementById('vDBP').value = bp[2]; }
-    const hr = line.match(/脈拍：(\d+)/);
-    if (hr) {
-      document.getElementById('vHR').value = hr[1];
-      if (line.includes('不整（あり）')) setToggle('Irr','あり');
-      else setToggle('Irr','なし');
-    }
-    const bt = line.match(/体温：([\d.]+)/);
-    if (bt) document.getElementById('vBT').value = bt[1];
-    const spo2 = line.match(/SpO2：(\d+)/);
-    if (spo2) {
-      document.getElementById('vSpO2').value = spo2[1];
-      if (line.includes('酸素投与（あり）')) setToggle('O2','あり');
-      else setToggle('O2','なし');
-    }
-    const rr = line.match(/呼吸数：(\d+)/);
-    if (rr) document.getElementById('vRR').value = rr[1];
-  });
-}
-
-// ===== テキストエクスポート =====
-function recordToText(r) {
-  const d = fmtDate(r.date);
-  const sep = '─'.repeat(40);
-  const lines = [
-    '╔══════════════════════════════════════╗',
-    '　　　　ナース手帖　実習記録',
-    '╚══════════════════════════════════════╝',
-    '',
-    `【実習日】　${d.full}`,
-    `【実習科】　${r.dept || '—'}`,
-    `【テーマ】　${r.title || '—'}`,
-    '',
-    sep,
-    '■ 患者情報',
-    sep,
-    `年齢・性別　：${r.age ? r.age + '歳' : '—'} ${r.gender || ''}`,
-    `主疾患　　　：${r.disease || '—'}`,
-    `既往歴・合併：${r.history || '—'}`,
-    `入院目的・経：${r.admission || '—'}`,
-    '',
-    sep,
-    '■ SOAP記録',
-    sep,
-    '',
-    '【S：主観的データ（患者の言葉）】',
-    r.soapS || '（未記入）',
-    '',
-    '【O：客観的データ】',
-    r.soapVital ? '＜バイタルサイン＞\n' + r.soapVital : '',
-    r.soapPhysical ? '＜フィジカルアセスメント＞\n' + r.soapPhysical : '',
-    r.soapO || '（未記入）',
-    '',
-    '【A：アセスメント】',
-    r.soapA || '（未記入）',
-    '',
-    '【P：看護計画】',
-    r.soapP || '（未記入）',
-    '',
-    sep,
-    '■ 振り返り',
-    sep,
-    '',
-    '【学んだこと・気づき】',
-    r.learning || '—',
-    '',
-    '【明日への課題】',
-    r.issue || '—',
-    '',
-    sep,
-    `出力日時：${new Date().toLocaleString('ja-JP')}`,
-    '　　　　　ナース手帖 - 看護学生実習記録アプリ',
-  ];
-  return lines.filter(l => l !== null && l !== undefined).join('\n');
-}
-
-function exportTxt(id) {
-  const r = records.find(x => x.id === id);
-  if (!r) return;
-  const text = recordToText(r);
-  const d = fmtDate(r.date);
-  const filename = `実習記録_${r.date}_${(r.dept || '').replace(/[/\\]/g, '-')}.txt`;
-  downloadText(text, filename);
-  showToast('テキストファイルを保存しました ✓');
-}
-
-function exportAllTxt() {
-  if (!records.length) { showToast('記録がありません'); return; }
-  const divider = '\n' + '═'.repeat(50) + '\n\n';
-  const text = records.map(r => recordToText(r)).join(divider);
-  const filename = `実習記録_全件_${new Date().toISOString().slice(0,10)}.txt`;
-  downloadText(text, filename);
-  showToast(`${records.length}件をエクスポートしました ✓`);
-}
-
-function downloadText(text, filename) {
-  const bom = '\uFEFF'; // BOM付きUTF-8（Windowsメモ帳対応）
-  const blob = new Blob([bom + text], { type: 'text/plain;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
 renderList();
 
-// Service Worker: 独自サーバーへデプロイ時のみ有効（このHTML単体では不要）
+// ===== PWA: Service Worker (inline Blob) =====
+if ('serviceWorker' in navigator) {
+  const swCode = `
+    const CACHE = 'nurse-techo-v1';
+    self.addEventListener('install', e => {
+      self.skipWaiting();
+    });
+    self.addEventListener('activate', e => {
+      e.waitUntil(
+        caches.keys().then(keys =>
+          Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+        )
+      );
+      self.clients.claim();
+    });
+    self.addEventListener('fetch', e => {
+      if (e.request.method !== 'GET') return;
+      e.respondWith(
+        caches.match(e.request).then(cached => {
+          if (cached) return cached;
+          return fetch(e.request).then(res => {
+            if (res && res.status === 200) {
+              const clone = res.clone();
+              caches.open(CACHE).then(c => c.put(e.request, clone));
+            }
+            return res;
+          }).catch(() => cached);
+        })
+      );
+    });
+  `;
+  const blob = new Blob([swCode], { type: 'application/javascript' });
+  const swUrl = URL.createObjectURL(blob);
+  navigator.serviceWorker.register(swUrl).then(reg => {
+    console.log('SW registered (inline)');
+  }).catch(err => console.log('SW skipped:', err));
+}
 
 // ===== PWA: Install Prompt =====
 let deferredPrompt = null;
